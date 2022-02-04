@@ -5,7 +5,6 @@ import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
 import axios, { AxiosError } from "axios";
-import { ExclamationIcon } from "@heroicons/react/solid";
 import { ShoppingCartIcon } from "@heroicons/react/outline";
 import {
   CalculateTaxesRequest,
@@ -20,69 +19,8 @@ import {
 } from "@/lib/addresses";
 import { sleepMs } from "@/lib/helpers";
 import { companyCodes, prices } from "@/lib/config";
-
-type RequestErrorProps = {
-  err: AxiosError;
-};
-
-const RequestError = ({ err }: RequestErrorProps) => {
-  return (
-    <div className="mb-8 rounded-md bg-red-50 p-4 shadow">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <ExclamationIcon
-            className="h-5 w-5 text-red-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-red-800">Request failed!</h3>
-          <div className="mt-2 text-sm text-red-700">
-            <code>
-              {`${err.config.method?.toUpperCase()} ${err.config.url}`}
-              <pre>{`${JSON.stringify(err.response?.data, null, 2)}`}</pre>
-            </code>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const TransactionCancelledError = () => {
-  return (
-    <div className="mb-8 rounded-md bg-yellow-50 p-4 shadow">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <ExclamationIcon
-            className="h-5 w-5 text-yellow-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-yellow-800">
-            Transaction cancelled!
-          </h3>
-          <div className="mt-2 text-sm text-yellow-700">
-            <p>Please try again ...</p>
-          </div>
-          <div className="mt-4">
-            <div className="-mx-2 -my-1.5 flex">
-              <Link href="/checkout" passHref>
-                <button
-                  type="button"
-                  className="rounded-md bg-yellow-50 px-2 py-1.5 text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2 focus:ring-offset-yellow-50"
-                >
-                  Dismiss
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import RequestError from "@/components/request-error";
+import TransactionCancelledError from "@/components/transaction-cancelled-error";
 
 const Checkout: NextPage = () => {
   const randomAddress = dummyAddressByCountryCode("DE");
@@ -195,7 +133,9 @@ const Checkout: NextPage = () => {
           </h2>
         </div>
         {error && <RequestError err={error} />}
-        {query.canceled && <TransactionCancelledError />}
+        {query.canceled && (
+          <TransactionCancelledError dismissHref="/checkout" />
+        )}
         <form onSubmit={onSubmit}>
           <div>
             <div className="md:grid md:grid-cols-3 md:gap-6">
