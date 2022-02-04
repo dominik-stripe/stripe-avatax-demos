@@ -5,114 +5,28 @@ import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
 import axios, { AxiosError } from "axios";
-import { ExclamationIcon } from "@heroicons/react/solid";
-import { ShoppingCartIcon } from "@heroicons/react/outline";
-import {
-  CalculateTaxesRequest,
-  CalculateTaxesResponse,
-} from "@/pages/api/calculate-taxes";
-import { CreateCheckoutSessionRequest } from "@/pages/api/stripe/create-checkout-session";
+import { ShoppingCartIcon, CashIcon } from "@heroicons/react/outline";
 import Spinner from "@/components/spinner";
-import {
-  CountriesAndStates,
-  statesByCountryCode,
-  dummyAddressByCountryCode,
-} from "@/lib/addresses";
 import { sleepMs } from "@/lib/helpers";
-
-// Config
-const companyCodes = [
-  { value: "DEFAULT", name: "DE - DEFAULT" },
-  { value: "TESTUK", name: "UK - TESTUK" },
-  { value: "TESTUS", name: "US - TESTUS" },
-];
-
-const prices = [
-  { value: "price_1KNzzEJ8iWN7g1F1AlsqN3qc", name: "Starter Plan - USD" },
-  { value: "price_1KIwngJ8iWN7g1F1P1Y6VXd7", name: "Starter Plan - EUR" },
-  { value: "price_1KJcyHJ8iWN7g1F1hPUWu6Tw", name: "Starter Plan - GBP" },
-];
-
-type RequestErrorProps = {
-  err: AxiosError;
-};
-
-const RequestError = ({ err }: RequestErrorProps) => {
-  return (
-    <div className="mb-8 rounded-md bg-red-50 p-4 shadow">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <ExclamationIcon
-            className="h-5 w-5 text-red-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-red-800">Request failed!</h3>
-          <div className="mt-2 text-sm text-red-700">
-            <code>
-              {`${err.config.method?.toUpperCase()} ${err.config.url}`}
-              <pre>{`${JSON.stringify(err.response?.data, null, 2)}`}</pre>
-            </code>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const TransactionCancelledError = () => {
-  return (
-    <div className="mb-8 rounded-md bg-yellow-50 p-4 shadow">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <ExclamationIcon
-            className="h-5 w-5 text-yellow-400"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-yellow-800">
-            Transaction cancelled!
-          </h3>
-          <div className="mt-2 text-sm text-yellow-700">
-            <p>Please try again ...</p>
-          </div>
-          <div className="mt-4">
-            <div className="-mx-2 -my-1.5 flex">
-              <Link href="/checkout" passHref>
-                <button
-                  type="button"
-                  className="rounded-md bg-yellow-50 px-2 py-1.5 text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2 focus:ring-offset-yellow-50"
-                >
-                  Dismiss
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import RequestError from "@/components/request-error";
+import TransactionCancelledError from "@/components/transaction-cancelled-error";
+import { companyCodes } from "@/lib/config";
+import CustomerPanel from "@/components/customer-panel";
+import SubscriptionPanel from "@/components/subscription-panel";
+import PaymentPanel from "@/components/payment-panel";
 
 const Checkout: NextPage = () => {
-  const randomAddress = dummyAddressByCountryCode("DE");
-  const [name, setName] = useState("Max Mustermann");
-  const [email, setEmail] = useState("max@example.com");
-  const [line1, setLine1] = useState(randomAddress.line1);
-  const [postalCode, setPostalCode] = useState(randomAddress.postalCode);
-  const [city, setCity] = useState(randomAddress.city);
-  const [state, setAddressState] = useState(randomAddress.state);
-  const [country, setCountry] = useState("DE");
+  const [customerId, setCustomerId] = useState("");
+  const [subscriptionId, setSubscriptionId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
   const [error, setError] = useState<AxiosError>();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [taxIncluded, setTaxIncluded] = useState(true);
   const [companyCode, setCompanyCode] = useState("DEFAULT");
-  const [price, setPrice] = useState("price_1KNzzEJ8iWN7g1F1AlsqN3qc");
   const { query } = useRouter();
 
+  /*
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -188,6 +102,7 @@ const Checkout: NextPage = () => {
       }
     }
   };
+  */
 
   return (
     <>
@@ -207,8 +122,7 @@ const Checkout: NextPage = () => {
           </h2>
         </div>
         {error && <RequestError err={error} />}
-        {query.canceled && <TransactionCancelledError />}
-        <form onSubmit={onSubmit}>
+        <div>
           <div>
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -219,188 +133,56 @@ const Checkout: NextPage = () => {
                 </div>
               </div>
               <div className="mt-5 md:col-span-2 md:mt-0">
-                <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="space-y-8 divide-y divide-gray-200">
-                      <div>
-                        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                          <div className="sm:col-span-3">
-                            <label
-                              htmlFor="name"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Name
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                autoComplete="given-name"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-3">
-                            <label
-                              htmlFor="email"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Email address
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-3">
-                            <label
-                              htmlFor="country"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Country
-                            </label>
-                            <div className="mt-1">
-                              <select
-                                id="country"
-                                name="country"
-                                autoComplete="country-name"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={country}
-                                onChange={(e) => {
-                                  setCountry(e.target.value);
-                                  const randomAddress =
-                                    dummyAddressByCountryCode(e.target.value);
-
-                                  setLine1(randomAddress.line1);
-                                  setPostalCode(randomAddress.postalCode);
-                                  setCity(randomAddress.city);
-                                  setAddressState(randomAddress.state);
-                                }}
-                              >
-                                {CountriesAndStates.map(({ name, code }) => {
-                                  return (
-                                    <option
-                                      key={`option-country-${code}`}
-                                      value={code}
-                                    >
-                                      {name}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-6">
-                            <label
-                              htmlFor="street-address"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Street (Line 1)
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="street-address"
-                                id="street-address"
-                                autoComplete="street-address"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={line1}
-                                onChange={(e) => setLine1(e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-2">
-                            <label
-                              htmlFor="city"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              City
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="city"
-                                id="city"
-                                autoComplete="address-level2"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-2">
-                            <label
-                              htmlFor="state"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              State
-                            </label>
-                            <div className="mt-1">
-                              <select
-                                id="state"
-                                name="state"
-                                autoComplete="state-name"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={state}
-                                onChange={(e) =>
-                                  setAddressState(e.target.value)
-                                }
-                              >
-                                {statesByCountryCode(country).map(
-                                  ({ name, code }) => {
-                                    return (
-                                      <option
-                                        key={`option-state-${code}`}
-                                        value={code}
-                                      >
-                                        {name}
-                                      </option>
-                                    );
-                                  }
-                                )}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-2">
-                            <label
-                              htmlFor="postal-code"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Postal code
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="postal-code"
-                                id="postal-code"
-                                autoComplete="postal-code"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value={postalCode}
-                                onChange={(e) => setPostalCode(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <CustomerPanel
+                  onChange={({ customerId }) => {
+                    setCustomerId(customerId);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="hidden sm:block" aria-hidden="true">
+            <div className="py-5">
+              <div className="border-t border-gray-200" />
+            </div>
+          </div>
+          <div className="mt-10 sm:mt-0">
+            <div className="md:grid md:grid-cols-3 md:gap-6">
+              <div className="md:col-span-1">
+                <div className="px-4 sm:px-0">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Subscription
+                  </h3>
                 </div>
+              </div>
+              <div className="mt-5 md:col-span-2 md:mt-0">
+                <SubscriptionPanel
+                  customerId={customerId}
+                  companyCode={companyCode}
+                  onChange={({ subscriptionId, clientSecret }) => {
+                    setSubscriptionId(subscriptionId);
+                    setClientSecret(clientSecret);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="hidden sm:block" aria-hidden="true">
+            <div className="py-5">
+              <div className="border-t border-gray-200" />
+            </div>
+          </div>
+          <div className="mt-10 sm:mt-0">
+            <div className="md:grid md:grid-cols-3 md:gap-6">
+              <div className="md:col-span-1">
+                <div className="px-4 sm:px-0">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Payment
+                  </h3>
+                </div>
+              </div>
+              <div className="mt-5 md:col-span-2 md:mt-0">
+                <PaymentPanel clientSecret={clientSecret} />
               </div>
             </div>
           </div>
@@ -410,7 +192,6 @@ const Checkout: NextPage = () => {
               <div className="border-t border-gray-200" />
             </div>
           </div>
-
           <div className="mt-10 sm:mt-0">
             <div className="md:grid md:grid-cols-3 md:gap-6">
               <div className="md:col-span-1">
@@ -430,30 +211,6 @@ const Checkout: NextPage = () => {
                         </legend>
                       </div>
                       <div className="mt-4 space-y-4">
-                        {prices.map(({ value, name }) => {
-                          return (
-                            <div
-                              key={`price-input-${value}`}
-                              className="flex items-center"
-                            >
-                              <input
-                                id={`price-input-${value}`}
-                                name={`price-input-${value}`}
-                                type="radio"
-                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                value={value}
-                                checked={price === value}
-                                onChange={(e) => setPrice(e.target.value)}
-                              />
-                              <label
-                                htmlFor={`price-input-${value}`}
-                                className="ml-3 block text-sm font-medium text-gray-700"
-                              >
-                                {name}
-                              </label>
-                            </div>
-                          );
-                        })}
                         <div className="flex items-start">
                           <div className="flex h-5 items-center">
                             <input
@@ -533,7 +290,7 @@ const Checkout: NextPage = () => {
               </div>
             </div>
           </div>
-        </form>
+        </div>
         <div className="hidden sm:block" aria-hidden="true">
           <div className="py-5">
             <div className="border-t border-gray-200" />
@@ -555,16 +312,8 @@ const Checkout: NextPage = () => {
                     {JSON.stringify(
                       {
                         companyCode,
-                        price,
                         taxIncluded,
-                        customer: {
-                          companyCode,
-                          line1,
-                          postalCode,
-                          city,
-                          state,
-                          country,
-                        },
+                        customerId,
                       },
                       null,
                       2

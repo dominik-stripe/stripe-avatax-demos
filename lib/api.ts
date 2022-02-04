@@ -1,6 +1,12 @@
 import Boom from "@hapi/boom";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 
+export type ErrorResponse = {
+  statusCode: number;
+  error: string;
+  message: string;
+};
+
 export const respondWithError = (res: NextApiResponse, err: Boom.Boom) => {
   Object.keys(err.output.headers).forEach((key) => {
     const value = err.output.headers[key];

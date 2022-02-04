@@ -47,7 +47,7 @@ const Home: NextPage = () => {
             <li>
               <Link href="/payment-element">
                 <a className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                  Payment Element Demo (WIP - Not working)
+                  Payment Element Demo
                 </a>
               </Link>
             </li>
