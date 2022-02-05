@@ -1,24 +1,6 @@
 import type { NextPage } from "next";
-import { useState } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import Image from "next/image";
-import axios, { AxiosError } from "axios";
-import { ExclamationIcon } from "@heroicons/react/solid";
-import { ShoppingCartIcon } from "@heroicons/react/outline";
-import {
-  CalculateTaxesRequest,
-  CalculateTaxesResponse,
-} from "@/pages/api/calculate-taxes";
-import { CreateCheckoutSessionRequest } from "@/pages/api/stripe/create-checkout-session";
-import Spinner from "@/components/spinner";
-import {
-  CountriesAndStates,
-  statesByCountryCode,
-  dummyAddressByCountryCode,
-} from "@/lib/addresses";
-import { sleepMs } from "@/lib/helpers";
 
 const Home: NextPage = () => {
   return (

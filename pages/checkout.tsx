@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import Image from "next/image";
 import axios, { AxiosError } from "axios";
 import { ShoppingCartIcon } from "@heroicons/react/outline";
 import {

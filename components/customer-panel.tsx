@@ -16,7 +16,7 @@ export type CustomerPanelOnChangeInput = {
 };
 
 export type CustomerPanelProps = {
-  onChange: ({ customerId }: CustomerPanelOnChangeInput) => void;
+  onChange: ({}: CustomerPanelOnChangeInput) => void;
 };
 
 const CustomerPanel = ({ onChange }: CustomerPanelProps) => {

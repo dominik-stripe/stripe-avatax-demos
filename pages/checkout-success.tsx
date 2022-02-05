@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import { NextPage, GetServerSideProps } from "next";
 import Stripe from "stripe";
 
@@ -41,8 +42,11 @@ const CheckoutSuccessPage: NextPage<CheckoutSuccessPageProps> = ({
   session,
   customer,
 }) => {
-  if (!session || !customer) {
-    return (
+  return (
+    <>
+      <Head>
+        <title>Checkout Success - Stripe x AvaTax Demos</title>
+      </Head>
       <div className="bg-white">
         <section
           aria-labelledby="features-heading"
@@ -53,49 +57,36 @@ const CheckoutSuccessPage: NextPage<CheckoutSuccessPageProps> = ({
               id="features-heading"
               className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl"
             >
-              Thank you for your order!
+              <Link href="/">
+                <a>←</a>
+              </Link>{" "}
+              {(!session || !customer) && "Thank you for your order!"}
+              {customer && `Thank you for your order, ${customer.name}!`}
             </h2>
-            <p className="mt-4 text-gray-500">
-              We couldn&apos;t retrieve session or customer information, but
-              assume everything went well!
-            </p>
           </div>
+          {customer && (
+            <div className="mx-auto mt-4 max-w-2xl px-4 lg:max-w-none lg:px-0">
+              <h3 className="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
+                Customer details:
+              </h3>
+              <code>
+                <pre>{JSON.stringify(customer, null, 2)}</pre>
+              </code>
+            </div>
+          )}
+          {session && (
+            <div className="mx-auto mt-4 max-w-2xl px-4 lg:max-w-none lg:px-0">
+              <h3 className="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
+                Session details:
+              </h3>
+              <code>
+                <pre>{JSON.stringify(session, null, 2)}</pre>
+              </code>
+            </div>
+          )}
         </section>
       </div>
-    );
-  }
-
-  return (
-    <div className="bg-white">
-      <section
-        aria-labelledby="features-heading"
-        className="mx-auto max-w-7xl py-16 sm:px-2 lg:px-8"
-      >
-        <div className="mx-auto max-w-2xl px-4 lg:max-w-none lg:px-0">
-          <h2
-            id="features-heading"
-            className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl"
-          >
-            Thank you for your order, {customer.name}!
-          </h2>
-          <p className="mt-4 text-gray-500">
-            Find Session and Customer objects below.
-          </p>
-          <h3 className="text-l mt-2 font-extrabold tracking-tight text-gray-900 sm:text-xl">
-            Customer:
-          </h3>
-          <code>
-            <pre>{JSON.stringify(customer, null, 2)}</pre>
-          </code>
-          <h3 className="text-l mt-2 font-extrabold tracking-tight text-gray-900 sm:text-xl">
-            Session:
-          </h3>
-          <code>
-            <pre>{JSON.stringify(session, null, 2)}</pre>
-          </code>
-        </div>
-      </section>
-    </div>
+    </>
   );
 };
 

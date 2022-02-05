@@ -14,7 +14,7 @@ export type PaymenetPanelOnChangeInput = {
 
 export type PaymenetPanelProps = {
   clientSecret: string;
-  onChange: ({ paymentIntentId }: PaymenetPanelOnChangeInput) => void;
+  onChange: ({}: PaymenetPanelOnChangeInput) => void;
 };
 
 const PaymenetPanel = ({ clientSecret, onChange }: PaymenetPanelProps) => {

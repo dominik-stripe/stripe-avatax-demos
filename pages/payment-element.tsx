@@ -1,32 +1,19 @@
 import type { NextPage } from "next";
 import { useState } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import Image from "next/image";
-import axios, { AxiosError } from "axios";
-import { ShoppingCartIcon, CashIcon } from "@heroicons/react/outline";
-import Spinner from "@/components/spinner";
-import { sleepMs } from "@/lib/helpers";
-import RequestError from "@/components/request-error";
-import TransactionCancelledError from "@/components/transaction-cancelled-error";
 import { companyCodes } from "@/lib/config";
 import CustomerPanel from "@/components/customer-panel";
 import SubscriptionPanel from "@/components/subscription-panel";
 import PaymentPanel from "@/components/payment-panel";
-import { useStripe } from "@stripe/react-stripe-js";
 
 const Checkout: NextPage = () => {
   const [customerId, setCustomerId] = useState("");
   const [subscriptionId, setSubscriptionId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
-  const [error, setError] = useState<AxiosError>();
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
   const [taxIncluded, setTaxIncluded] = useState(true);
   const [companyCode, setCompanyCode] = useState("DEFAULT");
-  const { query } = useRouter();
 
   return (
     <>
@@ -45,7 +32,6 @@ const Checkout: NextPage = () => {
             Payment Element Demo
           </h2>
         </div>
-        {error && <RequestError err={error} />}
         <div>
           <div>
             <div className="md:grid md:grid-cols-3 md:gap-6">

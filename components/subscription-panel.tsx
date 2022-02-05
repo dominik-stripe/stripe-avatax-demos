@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 import { prices } from "@/lib/config";
-import { CashIcon } from "@heroicons/react/outline";
 import Spinner from "./spinner";
 import {
   CreateSubscriptionRequest,
@@ -42,7 +41,7 @@ const SubscriptionPanel = ({
 
     const resCustomer = await axios.post("/api/stripe/get-customer", {
       customerId,
-    });
+    } as GetCustomerRequest);
     const customer = resCustomer.data as GetCustomerResponse;
     const resTax = await axios.post("/api/calculate-taxes", {
       companyCode,
