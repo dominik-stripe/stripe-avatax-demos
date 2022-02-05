@@ -109,7 +109,7 @@ const SubscriptionPanel = ({
 
   return (
     <form onSubmit={onSubmit} onReset={onReset}>
-      <div className="overflow-hidden shadow sm:rounded-md">
+      <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
         <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
           <fieldset>
             <div>
@@ -125,10 +125,11 @@ const SubscriptionPanel = ({
                     className="flex items-center"
                   >
                     <input
+                      disabled={subscriptionId !== ""}
                       id={`price-input-${value}`}
                       name={`price-input-${value}`}
                       type="radio"
-                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:pointer-events-none disabled:opacity-50"
                       value={value}
                       checked={price === value}
                       onChange={(e) => setPrice(e.target.value)}
@@ -144,27 +145,29 @@ const SubscriptionPanel = ({
               })}
             </div>
           </fieldset>
-          {customerId && !subscriptionId && (
-            <button
-              disabled={loading}
-              type="submit"
-              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading && <Spinner className="-ml-1 mr-3 h-5 w-5" />}
-              {loading ? "Creating subscription ..." : "Create subscription"}
-            </button>
-          )}
-          {subscriptionId && (
-            <div className="flex items-center justify-between">
-              <div>{subscriptionId}</div>
+        </div>
+        <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
+          <div className="flex items-center justify-between">
+            <div>{subscriptionId}</div>
+            {customerId && !subscriptionId && (
+              <button
+                disabled={loading}
+                type="submit"
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading && <Spinner className="-ml-1 mr-3 h-5 w-5" />}
+                {loading ? "Creating subscription ..." : "Create subscription"}
+              </button>
+            )}
+            {subscriptionId && (
               <button
                 type="reset"
                 className="justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 Clear
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </form>

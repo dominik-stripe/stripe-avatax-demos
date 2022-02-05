@@ -14,95 +14,19 @@ import { companyCodes } from "@/lib/config";
 import CustomerPanel from "@/components/customer-panel";
 import SubscriptionPanel from "@/components/subscription-panel";
 import PaymentPanel from "@/components/payment-panel";
+import { useStripe } from "@stripe/react-stripe-js";
 
 const Checkout: NextPage = () => {
   const [customerId, setCustomerId] = useState("");
   const [subscriptionId, setSubscriptionId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
+  const [paymentIntentId, setPaymentIntentId] = useState("");
   const [error, setError] = useState<AxiosError>();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [taxIncluded, setTaxIncluded] = useState(true);
   const [companyCode, setCompanyCode] = useState("DEFAULT");
   const { query } = useRouter();
-
-  /*
-  const onSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setStatus("Calculating taxes and fetching tax rates ...");
-
-    try {
-      const reqBody1: CalculateTaxesRequest = {
-        companyCode,
-        customer: {
-          name,
-          email,
-          country,
-          line1,
-          postalCode,
-          city,
-          state,
-        },
-        lineItems: [
-          {
-            price,
-            taxIncluded,
-            quantity: 1,
-          },
-        ],
-      };
-      const res1 = await axios.post("/api/calculate-taxes", reqBody1);
-      const data1 = res1.data as CalculateTaxesResponse;
-
-      if (data1.stripeTaxRatesCreated.length > 0) {
-        setStatus(
-          `Calculated taxes and created ${data1.stripeTaxRatesCreated.length} new Stripe Tax Rates ...`
-        );
-      } else {
-        setStatus("Calculated taxes and fetched Stripe Tax Rates ...");
-      }
-
-      await sleepMs(1250);
-
-      setStatus("Creating Customer and Checkout Session ...");
-
-      const reqBody2: CreateCheckoutSessionRequest = {
-        customer: {
-          name,
-          email,
-          country,
-          line1,
-          postalCode,
-          city,
-          state,
-        },
-        lineItems: data1.lineItems.map((li) => {
-          return {
-            price: li.price,
-            quantity: li.quantity,
-            tax_rates: li.taxRates,
-          };
-        }),
-      };
-      const res2 = await axios.post(
-        "/api/stripe/create-checkout-session",
-        reqBody2
-      );
-      const data = res2.data as { url: string };
-
-      setStatus("Redirecting ...");
-
-      window.location.href = data.url;
-    } catch (err) {
-      setLoading(false);
-      setStatus("");
-      if (axios.isAxiosError(err)) {
-        setError(err);
-      }
-    }
-  };
-  */
 
   return (
     <>
@@ -134,9 +58,7 @@ const Checkout: NextPage = () => {
               </div>
               <div className="mt-5 md:col-span-2 md:mt-0">
                 <CustomerPanel
-                  onChange={({ customerId }) => {
-                    setCustomerId(customerId);
-                  }}
+                  onChange={({ customerId }) => setCustomerId(customerId)}
                 />
               </div>
             </div>
@@ -182,7 +104,12 @@ const Checkout: NextPage = () => {
                 </div>
               </div>
               <div className="mt-5 md:col-span-2 md:mt-0">
-                <PaymentPanel clientSecret={clientSecret} />
+                <PaymentPanel
+                  clientSecret={clientSecret}
+                  onChange={({ paymentIntentId }) => {
+                    setPaymentIntentId(paymentIntentId);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -314,6 +241,9 @@ const Checkout: NextPage = () => {
                         companyCode,
                         taxIncluded,
                         customerId,
+                        subscriptionId,
+                        clientSecret,
+                        paymentIntentId,
                       },
                       null,
                       2
