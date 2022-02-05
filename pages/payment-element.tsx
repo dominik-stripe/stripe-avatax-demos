@@ -113,7 +113,6 @@ const Checkout: NextPage = () => {
               </div>
             </div>
           </div>
-
           <div className="hidden sm:block" aria-hidden="true">
             <div className="py-5">
               <div className="border-t border-gray-200" />
@@ -195,60 +194,43 @@ const Checkout: NextPage = () => {
                     </fieldset>
                   </div>
                 </div>
-                <div className="pt-8 pb-3">
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {loading ? (
-                        <Spinner className="-ml-1 mr-3 h-5 w-5" />
-                      ) : (
-                        <ShoppingCartIcon
-                          className="-ml-1 mr-2 h-5 w-5"
-                          aria-hidden="true"
-                        />
-                      )}
-                      {status || "Create Checkout Session"}
-                    </button>
+              </div>
+            </div>
+          </div>
+          <div className="hidden sm:block" aria-hidden="true">
+            <div className="py-5">
+              <div className="border-t border-gray-200" />
+            </div>
+          </div>
+          <div className="mt-10 sm:mt-0">
+            <div className="md:grid md:grid-cols-1 md:gap-6">
+              <div className="md:grid md:grid-cols-3 md:gap-6">
+                <div className="md:col-span-1">
+                  <div className="px-4 sm:px-0">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900">
+                      Debugging
+                    </h3>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="hidden sm:block" aria-hidden="true">
-          <div className="py-5">
-            <div className="border-t border-gray-200" />
-          </div>
-        </div>
-        <div className="mt-4 mb-8 md:grid md:grid-cols-1 md:gap-6">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1">
-              <div className="px-4 sm:px-0">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Debugging
-                </h3>
-              </div>
-            </div>
-            <div className="mt-5 md:col-span-2 md:mt-0">
-              <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
-                <div className="px-4 py-5 sm:p-6">
-                  <pre>
-                    {JSON.stringify(
-                      {
-                        companyCode,
-                        taxIncluded,
-                        customerId,
-                        subscriptionId,
-                        clientSecret,
-                        paymentIntentId,
-                      },
-                      null,
-                      2
-                    )}
-                  </pre>
+                <div className="mt-5 md:col-span-2 md:mt-0">
+                  <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
+                    <div className="px-4 py-5 sm:p-6">
+                      <pre>
+                        {JSON.stringify(
+                          {
+                            companyCode,
+                            taxIncluded,
+                            customerId,
+                            subscriptionId,
+                            clientSecret,
+                            paymentIntentId,
+                          },
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
