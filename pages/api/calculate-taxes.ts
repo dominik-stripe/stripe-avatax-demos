@@ -234,22 +234,26 @@ export default postOnly(async function handler(
   logger.debug("Finding or creating Stripe Tax Rates");
   for (const line of createTransactionResponse.lines) {
     const taxRates: string[] = [];
-    for (const detail of line.details) {
-      const { avaTaxRateId, taxRate, newlyCreated } =
-        await findOrCreateStripeTaxRate(detail, line.taxIncluded);
 
-      taxRates.push(taxRate.id);
+    if (line.isItemTaxable) {
+      for (const detail of line.details) {
+        const { avaTaxRateId, taxRate, newlyCreated } =
+          await findOrCreateStripeTaxRate(detail, line.taxIncluded);
 
-      if (newlyCreated) {
-        stripeTaxRatesCreated.push(taxRate.id);
+        taxRates.push(taxRate.id);
+
+        if (newlyCreated) {
+          stripeTaxRatesCreated.push(taxRate.id);
+        }
+
+        logger.debug(
+          `${newlyCreated ? "Created" : "Re-used"} Stripe Tax Rate "${
+            taxRate.id
+          }" for "${avaTaxRateId}"`
+        );
       }
-
-      logger.debug(
-        `${newlyCreated ? "Created" : "Re-used"} Stripe Tax Rate "${
-          taxRate.id
-        }" for "${avaTaxRateId}"`
-      );
     }
+
     lineItems.push({
       price: line.ref1!,
       quantity: line.quantity,
